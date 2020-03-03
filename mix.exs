@@ -7,8 +7,9 @@ defmodule Agcp.MixProject do
       version: "0.1.0",
       elixir: "~> 1.10-rc",
       start_permanent: Mix.env() == :prod,
-      escript: [main_module: Agcp.CLI, name: "agcp"],
-      deps: deps()
+      escript: [main_module: Agcp.CLI, name: to_string(Mix.env())],
+      deps: deps(),
+      default_task: "build"
     ]
   end
 
