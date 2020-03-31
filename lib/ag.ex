@@ -34,9 +34,23 @@ defmodule Agcp.Ag do
     |> to_charlist
     |> :os.cmd
     |> to_string
-    |> String.replace(command, "#{IO.ANSI.color_background(0, 0, 2)}#{IO.ANSI.cyan}#{IO.ANSI.bright}#{command}#{IO.ANSI.reset}")
     |> String.split("\n")
     |> Enum.filter(& &1 != "")
     |> (& {:ok, &1}).()
+  end
+
+  @spec color_line_output(String.t, String.t) :: String.t
+  def color_line_output(line, command) do
+    String.replace(
+      line,
+      command,
+      "#{IO.ANSI.color_background(0, 0, 2)}#{IO.ANSI.cyan}#{IO.ANSI.bright}#{command}#{IO.ANSI.reset}"
+    )
+  end
+
+  @spec color_output(search_result, String.t) :: search_result
+  def color_output(search_result, command) do
+    search_result
+    |> Enum.map(fn line -> color_line_output(line, command) end)
   end
 end

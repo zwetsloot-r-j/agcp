@@ -85,7 +85,8 @@ defmodule Agcp.CLI do
     with {:ok, search_result} <- Ag.run_ag_command(command),
          {:ok, match} <- Cp.copy_pattern([Enum.at(search_result, line - 1) || ""], pattern)
     do
-      IO.puts(match)
+      Ag.color_line_output(match, command)
+      |> IO.puts
     else
       {:error, error} -> IO.puts("Error: #{error}")
       _ -> IO.puts("Operation failed unexpectedly")
@@ -97,7 +98,8 @@ defmodule Agcp.CLI do
     with {:ok, search_result} <- Ag.run_ag_command(command),
          {:ok, line} = Cp.copy_line(search_result, line)
     do
-      IO.puts(line)
+      Ag.color_line_output(line, command)
+      |> IO.puts
     else
       {:error, error} -> IO.puts("Error: #{error}")
       _ -> IO.puts("Operation failed unexpectedly")
@@ -108,7 +110,12 @@ defmodule Agcp.CLI do
     with {:ok, search_result} <- Ag.run_ag_command(command),
          {:ok, match} <- Cp.copy_pattern(search_result, pattern)
     do
-      IO.puts(match)
+      Ag.color_line_output(match, command)
+      |> IO.puts
+
+      process_with_line_from_user(fn line ->
+        process({command, %{pattern: pattern, line: line}})
+      end)
     else
       {:error, error} -> IO.puts("Error: #{error}")
       _ -> IO.puts("Operation failed unexpectedly")
@@ -136,7 +143,13 @@ defmodule Agcp.CLI do
   defp process({command, %{}}) do
     case Ag.run_ag_command(command) do
       {:ok, search_result} ->
-        output_search_result(search_result)
+        search_result
+        |> Ag.color_output(command)
+        |> output_search_result
+
+        process_with_line_from_user(fn line ->
+          process({command, %{line: line}})
+        end)
       {:error, error} ->
         IO.puts("Error: #{error}")
     end
@@ -148,6 +161,16 @@ defmodule Agcp.CLI do
     |> Enum.map(fn {line, index} -> "  #{IO.ANSI.light_blue}#{index + 1}.#{IO.ANSI.reset} #{line}" end)
     |> Enum.join("\n")
     |> IO.puts
+  end
+
+  defp process_with_line_from_user(process) do
+    line = IO.gets("> ")
+    case Integer.parse(line) do
+      {line, _} ->
+        process.(line)
+      :error ->
+        :ok
+    end
   end
 
 end
