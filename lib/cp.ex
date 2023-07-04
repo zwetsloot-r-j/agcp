@@ -44,7 +44,7 @@ defmodule Agcp.Cp do
   end
 
   defp find_file_and_line(line) do
-    case {Regex.run(~r/.+\..[^\s]+$/, line), Regex.run(~r/.+:\d+(?=:\s)/, line)} do
+    case {Regex.run(~r/.+\.[^\s]+$/, line), Regex.run(~r/^[^:]+:\d+(?=:)/, line)} do
       {nil, nil} ->
         :none
       {[file | _], nil} ->

@@ -114,7 +114,7 @@ defmodule Agcp.CLI do
       |> IO.puts
 
       process_with_line_from_user(fn line ->
-        process({command, %{pattern: pattern, line: line}})
+        copy_search_result(command, search_result, line)
       end)
     else
       {:error, error} -> IO.puts("Error: #{error}")
@@ -148,7 +148,7 @@ defmodule Agcp.CLI do
         |> output_search_result
 
         process_with_line_from_user(fn line ->
-          process({command, %{line: line}})
+          copy_search_result(command, search_result, line)
         end)
       {:error, error} ->
         IO.puts("Error: #{error}")
@@ -170,6 +170,17 @@ defmodule Agcp.CLI do
         process.(line)
       :error ->
         :ok
+    end
+  end
+
+  defp copy_search_result(command, search_result, line) do
+    with {:ok, line} = Cp.copy_line(search_result, line)
+    do
+      Ag.color_line_output(line, command)
+      |> IO.puts
+    else
+      {:error, error} -> IO.puts("Error: #{error}")
+      _ -> IO.puts("Operation failed unexpectedly")
     end
   end
 
